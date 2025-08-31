@@ -3,9 +3,6 @@ FROM node:22-alpine
 # Install mcp-proxy globally
 RUN npm install -g mcp-proxy
 
-# Set environment variables
-ENV NODE_ENV=production
-
 # Set working directory
 WORKDIR /app
 
@@ -13,36 +10,29 @@ WORKDIR /app
 COPY package*.json ./
 COPY yarn.loc[k] ./
 
-# Install ALL dependencies (including devDependencies for build)
+# Install only production dependencies
 RUN if [ -f yarn.lock ]; then \
-        yarn install --frozen-lockfile; \
+        yarn install --frozen-lockfile --production; \
     elif [ -f package-lock.json ]; then \
-        npm ci; \
+        npm ci --omit=dev; \
     else \
-        npm install; \
+        npm install --production; \
     fi
 
 # Copy application code
 COPY . .
 
-# Build if build script exists
-RUN if grep -q '"build"' package.json; then \
-        if [ -f yarn.lock ]; then yarn build; else npm run build; fi; \
-    fi
-
-# Clean up dev dependencies and cache AFTER build
-RUN if [ -f yarn.lock ]; then \
-        yarn install --frozen-lockfile --production=true; \
-    else \
-        npm prune --production; \
-    fi && \
-    npm cache clean --force && \
+# Clean up cache
+RUN npm cache clean --force && \
     rm -rf /tmp/* /var/cache/apk/*
 
 # Create non-root user
 RUN addgroup -g 1001 -S appuser && adduser -S appuser -G appuser
 RUN chown -R appuser:appuser /app
 USER appuser
+
+# Set production environment
+ENV NODE_ENV=production
 
 EXPOSE 8080
 ENTRYPOINT ["mcp-proxy"]
