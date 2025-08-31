@@ -1,0 +1,9 @@
+# project.toml
+
+# This section defines a custom build step that runs
+# before the standard Node.js buildpack steps.
+[[build.pre]]
+# The command to run.
+# This will install the 'lodash' package and add it to package.json
+# so the buildpack can correctly prune dependencies later.
+args = ["npm", "install", "lodash"]
