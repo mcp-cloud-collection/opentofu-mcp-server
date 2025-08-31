@@ -13,9 +13,9 @@ WORKDIR /app
 COPY package*.json ./
 COPY yarn.loc[k] ./
 
-# Install dependencies
+# Install ALL dependencies (including devDependencies for build)
 RUN if [ -f yarn.lock ]; then \
-        yarn install --frozen-lockfile --production=false; \
+        yarn install --frozen-lockfile; \
     elif [ -f package-lock.json ]; then \
         npm ci; \
     else \
@@ -30,7 +30,7 @@ RUN if grep -q '"build"' package.json; then \
         if [ -f yarn.lock ]; then yarn build; else npm run build; fi; \
     fi
 
-# Clean up dev dependencies and cache
+# Clean up dev dependencies and cache AFTER build
 RUN if [ -f yarn.lock ]; then \
         yarn install --frozen-lockfile --production=true; \
     else \
