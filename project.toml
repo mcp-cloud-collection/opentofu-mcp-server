@@ -6,4 +6,4 @@
 # The command to run.
 # This will install the 'lodash' package and add it to package.json
 # so the buildpack can correctly prune dependencies later.
-args = ["npm", "install", "lodash"]
+args = ["npm", "install", "mcp-proxy"]
